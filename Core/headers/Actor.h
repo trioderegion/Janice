@@ -3,6 +3,19 @@
 class AActor
 {
 public:
+	/** default initalization */
 	AActor::AActor() = default;
+	
+	/** Initialize with a name */
+	explicit AActor::AActor(const std::string& name) : Name{ name } {};
+
 	AActor::~AActor() = default;
+
+	// ACCESSORS
+
+	/* returns actor name */
+	const std::string& GetName() const { return Name; };
+
+private:
+	std::string Name;
 };
