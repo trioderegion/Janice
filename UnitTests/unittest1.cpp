@@ -57,11 +57,17 @@ namespace UnitTests
 		TEST_METHOD(SpawningActor)
 		{
 			FWorld world;
-			auto* actor_creature = world.SpawnActor<ACreature>("training dummy");
-			Assert::IsTrue(static_cast<ACreature*>(actor_creature) != nullptr);
-			auto* creature = static_cast<ACreature*>(actor_creature);
+
+			/* add actor and cast to parent type. Then cast back down and access ACreature only members. */
+			AActor* actor_creature = world.SpawnActor<ACreature>("training dummy");
+			Assert::IsTrue(dynamic_cast<ACreature*>(actor_creature) != nullptr);
+			ACreature* creature = dynamic_cast<ACreature*>(actor_creature);
 			Assert::AreEqual(creature->HitPoints().Current(), 0);
 			Assert::AreEqual(creature->GetName(), std::string("training dummy"));
+
+			/* Spawn an actor and try to cast down to a creature */
+			auto* plain_actor = world.SpawnActor<AActor>("actor");
+			Assert::IsTrue(dynamic_cast<ACreature*>(plain_actor) == nullptr);
 		}
 	};
 }

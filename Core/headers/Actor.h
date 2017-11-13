@@ -9,7 +9,7 @@ public:
 	/** Initialize with a name */
 	explicit AActor::AActor(const std::string& name) : Name{ name } {};
 
-	AActor::~AActor() = default;
+	virtual AActor::~AActor() {};
 
 	// ACCESSORS
 
