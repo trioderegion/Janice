@@ -7,11 +7,30 @@
 #include "die.h"
 #include <ctime>
 #include <iostream>
+#include "Equipment.h"
+#include "Weapon.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+
+
 namespace UnitTests
 {		
+	//Not a perfect range check but it will catch serious errors
+	//create genFunc by passing an in-place lamba that returns a single iteration of a number generation
+	auto range_check = [](int numIterations, auto genFunc, auto minResult, auto maxResult)
+	{
+		bool pass = true;
+		for (int iteration = 0; iteration < numIterations; iteration++)
+		{
+			const auto result = genFunc();
+			pass &= (result >= minResult);
+			pass &= (result <= maxResult);
+		}
+
+		return pass;
+	};
+
 	TEST_CLASS(ActorTests)
 	{
 	public:
@@ -76,7 +95,29 @@ namespace UnitTests
 	{
 		TEST_METHOD(CreatingItem)
 		{
+			std::string abacus_name("Abacus");
+			std::string acid_name("Acid (vial)");
+			UItem abacus(abacus_name, 2, 2);
+			UItem acid(acid_name, 25, 1);
+
+			Assert::IsTrue(abacus.GetName() == abacus_name);
+			Assert::IsTrue(acid.GetName() == acid_name);
 			
+			Assert::IsTrue(abacus.GetValue() == 2);
+			Assert::IsTrue(acid.GetValue() == 25);
+
+			Assert::IsTrue(abacus.GetWeight() == 2);
+			Assert::IsTrue(acid.GetWeight() == 1);
+		}
+
+		TEST_METHOD(CreatingWeapon)
+		{
+			UWeapon mace(UItem("Mace", .1, 2), { EWeaponCategory::Simple, EWeaponCategory::Melee }, {}, FDieSet(1, 6));
+
+			FDieSet mace_damage_die = mace.GetDamageDie();
+
+			//check that the damage die is correct
+
 		}
 	};
 
@@ -90,20 +131,16 @@ namespace UnitTests
 			for(int size : {1,6,20})
 			{
 				FDie die(size);
-				for (int iteration = 0; iteration < 1000; iteration++)
-				{
-					uint16 result = die.Roll();
-					std::cout << result;
-					Assert::IsTrue(result >= 1);
-					Assert::IsTrue(result <= size);
-				}
 
+				auto roll_func = [&die]() { return die.Roll(); };
+				Assert::IsTrue(range_check(1000, roll_func, 1, size));
 				const auto& history = die.GetHistory();
 				std::vector<int32> results(die.NumSides());
 				results.empty();
-				for (const auto& element : history)
+				for (const auto& roll : history)
 				{
-					results[element-1]++;
+					//store in element = roll-1 (for indexing reasons, ya dofus)
+					results[roll-1]++;
 				}
 
 				if (die.NumSides() == 1)
@@ -128,21 +165,20 @@ namespace UnitTests
 
 			//check that silly d0's work
 			FDie d0(0);
-			uint16 result = d0.Roll();
-			Assert::IsTrue(result == 0);
+			auto roll_func = [&d0]() {return d0.Roll(); };
+			range_check(1000, roll_func, 0, 0);
 		}
 
 		TEST_METHOD(SetCreation)
 		{
 			FDieSet threeD6(3, 6);
 
-			for (int iteration = 0; iteration < 1000; iteration++)
-			{
-				auto result = threeD6.Roll();
-				Assert::IsTrue(result >= 3);
-				Assert::IsTrue(result <= 18);
-			}
+			//ensuring a 3d6 roll falls inside the expected range
+			auto roll_func = [&threeD6]() { return threeD6.Roll(); };
+			Assert::IsFalse(range_check(1000, roll_func, 3, 5));
+			Assert::IsTrue(range_check(1000, roll_func, 3, 18));
 		}
+
 	};
 
 }

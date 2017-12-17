@@ -4,11 +4,22 @@
 
 enum class EWeaponCategory : int8
 {
-	None,
-	Simple,
-	Martial,
-	Ranged,
-	Melee
+	None = -1,
+	Simple = 0,
+	Martial = 1,
+	Ranged = 2,
+	Melee = 3
+};
+
+enum class EWeaponTag : int8
+{
+	Ammunition,
+	Thrown,
+	Heavy,
+	TwoHanded,
+	Versatile,
+	Finesse,
+	Light
 };
 
 /**
@@ -17,14 +28,30 @@ enum class EWeaponCategory : int8
 class UWeapon : UItem
 {
 public:
-	UWeapon::UWeapon(const UItem& item, std::vector<EWeaponCategory>& categories, const FDieSet& damageDie)
+	UWeapon::UWeapon(const UItem& item, const std::vector<EWeaponCategory>& categories, const std::vector<EWeaponTag>& weaponTags, const FDieSet& damageDie)
 		: UItem{item}
 		, mDamageDie{ damageDie }
 		, mCategories{ categories }
+		, mTags{ weaponTags }
 	{
+	}
+
+	const FDieSet& GetDamageDie() const { return mDamageDie; }
+
+	bool Attach(ACreature* creature)
+	{
+		if (creature == nullptr)
+		{
+			return false;
+		}
+
+		mOwner = creature;
+		return true;
 	}
 
 private:
 	FDieSet mDamageDie;
 	std::vector<EWeaponCategory> mCategories;
+	std::vector<EWeaponTag> mTags;
+	ACreature* mOwner{nullptr};
 };
