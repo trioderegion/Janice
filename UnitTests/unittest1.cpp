@@ -4,12 +4,15 @@
 #include "HitPoints.h"
 #include "Creature.h"
 #include "World.h"
+#include "die.h"
+#include <ctime>
+#include <iostream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTests
 {		
-	TEST_CLASS(AActorTests)
+	TEST_CLASS(ActorTests)
 	{
 	public:
 		
@@ -30,7 +33,7 @@ namespace UnitTests
 
 	};
 
-	TEST_CLASS(ACreatureTests)
+	TEST_CLASS(CreatureTests)
 	{
 	public:
 		TEST_METHOD(Initializing)
@@ -47,12 +50,10 @@ namespace UnitTests
 		}
 		TEST_METHOD(Building)
 		{
-			ACreature training_dummy("training dummy");
-			FName("Rope");
 		}
 	};
 
-	TEST_CLASS(InputTests)
+	TEST_CLASS(WorldTests)
 	{
 		TEST_METHOD(SpawningActor)
 		{
@@ -70,4 +71,78 @@ namespace UnitTests
 			Assert::IsTrue(dynamic_cast<ACreature*>(plain_actor) == nullptr);
 		}
 	};
+
+	TEST_CLASS(Equipment)
+	{
+		TEST_METHOD(CreatingItem)
+		{
+			
+		}
+	};
+
+	TEST_CLASS(Dice)
+	{
+		/** Testing for correct range on die rolls */
+		TEST_METHOD(RangeChecking)
+		{
+			srand(static_cast<unsigned int>(time(NULL)));
+
+			for(int size : {1,6,20})
+			{
+				FDie die(size);
+				for (int iteration = 0; iteration < 1000; iteration++)
+				{
+					uint16 result = die.Roll();
+					std::cout << result;
+					Assert::IsTrue(result >= 1);
+					Assert::IsTrue(result <= size);
+				}
+
+				const auto& history = die.GetHistory();
+				std::vector<int32> results(die.NumSides());
+				results.empty();
+				for (const auto& element : history)
+				{
+					results[element-1]++;
+				}
+
+				if (die.NumSides() == 1)
+				{
+					//ensure only element 0 is populated and that all other entries are 0
+					int32 numRolls = results[0];
+					Assert::IsTrue(numRolls == 1000);
+					Assert::IsTrue(results.size() == 1);
+
+				}
+				else
+				{
+					//ensure each number appears at least once
+					for (const auto& count : results)
+					{
+						Assert::IsTrue(count > 0);
+						Assert::IsTrue(count < 1000);
+					}
+				}
+
+			}
+
+			//check that silly d0's work
+			FDie d0(0);
+			uint16 result = d0.Roll();
+			Assert::IsTrue(result == 0);
+		}
+
+		TEST_METHOD(SetCreation)
+		{
+			FDieSet threeD6(3, 6);
+
+			for (int iteration = 0; iteration < 1000; iteration++)
+			{
+				auto result = threeD6.Roll();
+				Assert::IsTrue(result >= 3);
+				Assert::IsTrue(result <= 18);
+			}
+		}
+	};
+
 }
