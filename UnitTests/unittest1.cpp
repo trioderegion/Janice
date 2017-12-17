@@ -117,7 +117,17 @@ namespace UnitTests
 			FDieSet mace_damage_die = mace.GetDamageDie();
 
 			//check that the damage die is correct
+			auto roll_func = [&mace_damage_die]() {return mace_damage_die.Roll(); };
+			range_check(1000, roll_func, 1, 6);
 
+		}
+
+		TEST_METHOD(RawWeaponDamage)
+		{
+			UWeapon mace(UItem("Mace", .1, 2), { EWeaponCategory::Simple, EWeaponCategory::Melee }, {}, FDieSet(1, 6));
+
+			auto damage_roll = [&mace]() { return mace.RollDamage(); };
+			range_check(1000, damage_roll, 1, 6);
 		}
 	};
 

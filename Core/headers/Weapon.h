@@ -49,6 +49,11 @@ public:
 		return true;
 	}
 
+	uint16 RollDamage()
+	{
+		return mDamageDie.Roll();
+	}
+
 private:
 	FDieSet mDamageDie;
 	std::vector<EWeaponCategory> mCategories;
